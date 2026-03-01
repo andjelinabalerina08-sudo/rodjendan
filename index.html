@@ -385,7 +385,7 @@
         <div class="panel">
           <div class="stack">
             <h1 id="instrTitle">Rođendanski poklon 🎂</h1>
-            <p id="instrText">Dva mala izazova.\nNa kraju te čeka iznenađenje.</p>
+            <p id="instrText">Dve male igre.\nNa kraju te čeka iznenađenje.💕</p>
             <div class="sp12"></div>
             <div class="hintTap" id="instrTapHint">Pritisni bilo gde da počne</div>
             <p class="muted center" style="margin-top:10px;">(Najbolje radi na telefonu)</p>
@@ -437,7 +437,7 @@
             <p class="center" style="font-size:18px; line-height:28px; color:rgba(42,31,24,.86); font-weight:1100;">
               Nadam se da ti se svidelo.<br>
               Želim ti sve najbolje.<br>
-              Srećan rođendan.<br>
+              Srećan rođendan.🥳😘<br>
               <span style="color:rgba(42,31,24,.92)">Tvoj Aleksa ❤️</span>
             </p>
             <div class="sp12"></div>
@@ -773,7 +773,7 @@
         fit(){
           fitCanvas(g2);
           const w=g2.width, h=g2.height;
-          this.player.r = Math.max(22, Math.min(w,h)*0.03);
+          this.player.r = Math.max(30, Math.min(w,h)*0.045);
         },
         reset(){
           this.score=0;
@@ -840,7 +840,7 @@
           }
 
           const p=this.player;
-          const follow = 15.5;
+          const follow = 35;
           p.x += (p.targetX - p.x) * (1 - Math.exp(-follow*dt));
           p.y += (p.targetY - p.y) * (1 - Math.exp(-follow*dt));
           p.x = clamp(p.x, p.r, w - p.r);
@@ -901,7 +901,7 @@
             ctx2.shadowColor = it.good ? "rgba(255,90,165,.30)" : "rgba(42,31,24,.18)";
             ctx2.shadowBlur = 18;
             const emoji = it.good ? "💗" : "🖤";
-            const size = Math.floor(Math.max(30, w*0.045));
+            const size = Math.floor(Math.max(40, w*0.065));
             ctx2.font = `${size}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
             ctx2.textAlign="center";
             ctx2.textBaseline="middle";
@@ -913,7 +913,7 @@
           ctx2.save();
           ctx2.shadowColor="rgba(214,162,58,.24)";
           ctx2.shadowBlur=22;
-          const pSize = Math.floor(Math.max(34, w*0.055));
+          const pSize = Math.floor(Math.max(50, w*0.085));
           ctx2.font = `${pSize}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
           ctx2.textAlign="center";
           ctx2.textBaseline="middle";
@@ -1096,4 +1096,5 @@
       startIntro();
     </script>
   </body>
+
 </html>
