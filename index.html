@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="sr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rođendanski poklon 🎂</title>
+    <style>
+      :root{
+        --bgA:#fff3d6;
+        --bgB:#ffe2a6;
+        --bgC:#ffd2b8;
+
+        --ink:#2a1f18;
+        --muted:rgba(42,31,24,.72);
+        --muted2:rgba(42,31,24,.58);
+
+        --rose:#ff5aa5;
+        --gold:#d6a23a;
+
+        --glass:rgba(255,255,255,.55);
+        --glass2:rgba(255,255,255,.42);
+        --stroke:rgba(214,162,58,.26);
+
+        --shadow: 0 18px 36px rgba(42,31,24,.16);
+      }
+
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+        color:var(--ink);
+        background:
+          radial-gradient(1100px 700px at 18% 18%, rgba(255,90,165,.14), transparent 62%),
+          radial-gradient(1000px 700px at 82% 26%, rgba(214,162,58,.18), transparent 62%),
+          linear-gradient(180deg, var(--bgA), var(--bgB), var(--bgC));
+        overflow:hidden;
+        touch-action:manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Floating balloons (MORE visible) */
+      .balloons{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0}
+      .balloon{
+        position:absolute;
+        width:var(--sz, 92px);
+        height:calc(var(--sz, 92px) * 1.28);
+        border-radius: 50% 50% 48% 48%;
+        opacity: var(--op, .28);
+        transform: translate3d(0,0,0);
+        background:
+          radial-gradient(60% 50% at 30% 30%, rgba(255,255,255,.78), transparent 40%),
+          radial-gradient(60% 50% at 70% 55%, rgba(255,255,255,.32), transparent 50%),
+          var(--col, rgba(255,90,165,.42));
+        animation:
+          floatUp var(--dur, 13s) linear infinite,
+          sway var(--dur2, 5.5s) ease-in-out infinite alternate;
+        filter: saturate(1.08);
+      }
+      .balloon::after{
+        content:"";
+        position:absolute;
+        left:50%;
+        bottom:-18px;
+        width:2px;
+        height:34px;
+        transform: translateX(-50%);
+        background: rgba(42,31,24,.22);
+        border-radius:2px;
+      }
+      @keyframes floatUp{
+        from{ transform: translate3d(0, 115vh, 0); }
+        to  { transform: translate3d(0, -140vh, 0); }
+      }
+      @keyframes sway{
+        from{ margin-left: -14px; }
+        to  { margin-left:  14px; }
+      }
+
+      .app{position:fixed; inset:0; z-index:1}
+
+      canvas.game{
+        position:fixed;
+        inset:0;
+        width:100vw;
+        height:100svh;
+        display:none;
+        z-index:1;
+        background:
+          radial-gradient(1000px 600px at 15% 15%, rgba(255,90,165,.13), transparent 62%),
+          radial-gradient(900px 650px at 85% 30%, rgba(214,162,58,.16), transparent 62%),
+          linear-gradient(180deg, rgba(255,243,214,.94), rgba(255,226,166,.90), rgba(255,210,184,.90));
+      }
+      canvas.game.active{display:block}
+
+      .overlay{
+        position:fixed;
+        inset:0;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:18px;
+        z-index:3;
+      }
+      .overlay.active{display:flex}
+
+      .panel{
+        width:min(760px, 100%);
+        border-radius:22px;
+        background: linear-gradient(180deg, var(--glass), var(--glass2));
+        border:1px solid var(--stroke);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+        padding:18px;
+      }
+
+      .topHUD{
+        position:fixed;
+        left:12px; right:12px; top:12px;
+        z-index:4;
+        display:none;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .topHUD.active{display:flex}
+
+      .pill{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:10px 12px;
+        border-radius:999px;
+        background: rgba(255,255,255,.64);
+        border:1px solid rgba(214,162,58,.26);
+        box-shadow: 0 10px 24px rgba(42,31,24,.10);
+        backdrop-filter: blur(8px);
+        font-weight:900;
+      }
+      .pill small{font-weight:800; color:rgba(42,31,24,.62)}
+      .pill strong{font-weight:1000}
+
+      .btn{
+        border:0;
+        border-radius:999px;
+        padding:14px 18px;
+        font-weight:1000;
+        font-size:16px;
+        cursor:pointer;
+        user-select:none;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        transition: transform .08s ease;
+      }
+      .btn:active{transform: scale(.985)}
+      .btn.primary{
+        color:#1a120d;
+        background: linear-gradient(90deg, rgba(255,90,165,.98), rgba(214,162,58,.92));
+        box-shadow: 0 14px 30px rgba(255,90,165,.18);
+      }
+      .btn.ghost{
+        color:var(--ink);
+        background: rgba(255,255,255,.66);
+        border:1px solid rgba(214,162,58,.24);
+      }
+
+      .stack{display:flex; flex-direction:column; gap:10px}
+      .row{display:flex; flex-wrap:wrap; gap:10px}
+      .row .btn{flex:1; min-width:160px}
+
+      h1,h2{margin:0}
+      h1{
+        font-size:34px;
+        line-height:40px;
+        font-weight:1100;
+        letter-spacing:-0.02em;
+        text-align:center;
+      }
+      h2{
+        font-size:22px;
+        line-height:28px;
+        font-weight:1100;
+        letter-spacing:-0.02em;
+        text-align:center;
+      }
+      p{margin:0; color:var(--muted); line-height:24px; white-space:pre-line}
+      .muted{color:var(--muted2)}
+      .center{text-align:center}
+      .sp12{height:12px}
+
+      /* Tap hint */
+      .hintTap{
+        margin-top:14px;
+        font-weight:1100;
+        color: rgba(42,31,24,.82);
+        opacity:0;
+        transform: translateY(10px);
+        transition: opacity .35s ease, transform .35s ease;
+        text-align:center;
+      }
+      .hintTap.show{
+        opacity:1;
+        transform: translateY(0);
+      }
+
+      /* Countdown */
+      .countdown{
+        position:fixed;
+        inset:0;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        z-index:5;
+        pointer-events:none;
+      }
+      .countdown.show{display:flex}
+      .countNum{
+        width:140px; height:140px;
+        border-radius:999px;
+        background: rgba(255,255,255,.78);
+        border:1px solid rgba(214,162,58,.30);
+        box-shadow: 0 22px 50px rgba(42,31,24,.14);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:56px;
+        font-weight:1100;
+        color:var(--ink);
+        transform: scale(0.86);
+        animation: pop .33s ease forwards;
+      }
+      @keyframes pop{to{ transform: scale(1); }}
+
+      /* Result overlay */
+      .resultBig{
+        font-size:44px;
+        font-weight:1100;
+        letter-spacing:-0.02em;
+        text-align:center;
+      }
+
+      /* Gift open */
+      .giftStage{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:14px;
+      }
+      .giftBox{
+        width:min(360px, 78vw);
+        height:min(360px, 78vw);
+        max-height:40vh;
+        max-width:40vh;
+        position:relative;
+        cursor:pointer;
+        user-select:none;
+      }
+      .giftBase{
+        position:absolute;
+        inset:18% 10% 10% 10%;
+        border-radius:20px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.44)),
+          linear-gradient(90deg, rgba(255,90,165,.48), rgba(214,162,58,.46));
+        border:1px solid rgba(214,162,58,.34);
+        box-shadow: 0 24px 60px rgba(42,31,24,.14);
+      }
+      .giftLid{
+        position:absolute;
+        left:8%;
+        right:8%;
+        top:6%;
+        height:28%;
+        border-radius:22px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.50)),
+          linear-gradient(90deg, rgba(255,90,165,.52), rgba(214,162,58,.50));
+        border:1px solid rgba(214,162,58,.38);
+        box-shadow: 0 18px 40px rgba(42,31,24,.12);
+        transform-origin: 20% 90%;
+        transform: rotate(0deg) translateY(0);
+        transition: transform .55s cubic-bezier(.2,.9,.2,1);
+      }
+      .giftRibbonV, .giftRibbonH{
+        position:absolute;
+        background: rgba(255,90,165,.62);
+      }
+      .giftRibbonV{
+        width:10%;
+        top:10%;
+        bottom:10%;
+        left:45%;
+        border-radius:999px;
+        box-shadow: 0 10px 20px rgba(255,90,165,.14);
+      }
+      .giftRibbonH{
+        height:10%;
+        left:10%;
+        right:10%;
+        top:44%;
+        border-radius:999px;
+        box-shadow: 0 10px 20px rgba(255,90,165,.12);
+      }
+      .giftBow{
+        position:absolute;
+        top:3%;
+        left:50%;
+        transform: translateX(-50%);
+        font-size:44px;
+        filter: drop-shadow(0 14px 22px rgba(42,31,24,.12));
+      }
+      .giftTapNote{
+        font-weight:1100;
+        color: rgba(42,31,24,.82);
+      }
+      .giftBox.shake{animation: shake .35s ease}
+      @keyframes shake{
+        0%{transform:translateX(0)}
+        25%{transform:translateX(-6px)}
+        50%{transform:translateX(6px)}
+        75%{transform:translateX(-4px)}
+        100%{transform:translateX(0)}
+      }
+      .giftBox.open .giftLid{transform: rotate(-34deg) translateY(-10%)}
+
+      /* Kiss */
+      .kiss{
+        position:fixed;
+        inset:0;
+        display:none;
+        z-index:6;
+        background: radial-gradient(900px 700px at 50% 40%, rgba(255,90,165,.26), rgba(255,226,166,.90) 55%, rgba(255,243,214,.98));
+        overflow:hidden;
+      }
+      .kiss.show{display:block}
+      .kissCenter{
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform: translate(-50%,-50%) scale(.65);
+        font-size:120px;
+        animation: kissPop .55s cubic-bezier(.2,.9,.2,1) forwards;
+        filter: drop-shadow(0 24px 40px rgba(42,31,24,.18));
+      }
+      @keyframes kissPop{to{ transform: translate(-50%,-50%) scale(1.05); }}
+      .kissHearts{position:absolute; inset:0; pointer-events:none}
+      .kH{
+        position:absolute;
+        font-size:22px;
+        opacity:.9;
+        animation: fly 1200ms ease-out forwards;
+        filter: drop-shadow(0 10px 16px rgba(42,31,24,.12));
+      }
+      @keyframes fly{to{ transform: translate(var(--dx), var(--dy)) scale(1.2); opacity:0; }}
+      .kissFade{
+        position:absolute;
+        inset:0;
+        background: rgba(255,255,255,0);
+        animation: fadeOut 1250ms ease forwards;
+      }
+      @keyframes fadeOut{
+        65%{background: rgba(255,255,255,0)}
+        100%{background: rgba(255,255,255,.96)}
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="balloons" id="balloons"></div>
+
+    <div class="app">
+      <canvas class="game" id="g1"></canvas>
+      <canvas class="game" id="g2"></canvas>
+
+      <div class="topHUD" id="hud">
+        <div class="pill" id="hudLeft"><small>—</small></div>
+        <div class="pill" id="hudRight"><small>—</small></div>
+      </div>
+
+      <!-- Instructions (tap anywhere) -->
+      <div class="overlay active" id="ovInstr">
+        <div class="panel">
+          <div class="stack">
+            <h1 id="instrTitle">Rođendanski poklon 🎂</h1>
+            <p id="instrText">Dva mala izazova.\nNa kraju te čeka iznenađenje.</p>
+            <div class="sp12"></div>
+            <div class="hintTap" id="instrTapHint">Pritisni bilo gde da počne</div>
+            <p class="muted center" style="margin-top:10px;">(Najbolje radi na telefonu)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="overlay" id="ovResult">
+        <div class="panel">
+          <div class="stack">
+            <h2 id="resTitle">Rezultat</h2>
+            <div class="resultBig" id="resBig">0</div>
+            <p class="center muted" id="resSmall">—</p>
+            <div class="sp12"></div>
+            <div class="row">
+              <button class="btn ghost" id="btnReplay">Ponovo</button>
+              <button class="btn primary" id="btnNext">Nastavi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gift -->
+      <div class="overlay" id="ovGift">
+        <div class="panel">
+          <div class="giftStage">
+            <h2>Imam još nešto…</h2>
+            <p class="center muted">Dodirni poklon da ga otvoriš.</p>
+
+            <div class="giftBox" id="giftBox" aria-label="Poklon">
+              <div class="giftLid"></div>
+              <div class="giftBase"></div>
+              <div class="giftRibbonV"></div>
+              <div class="giftRibbonH"></div>
+              <div class="giftBow">🎀</div>
+            </div>
+
+            <div class="giftTapNote" id="giftTapNote">Tapni 🎁</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final -->
+      <div class="overlay" id="ovFinal">
+        <div class="panel">
+          <div class="stack">
+            <h2>💌</h2>
+            <p class="center" style="font-size:18px; line-height:28px; color:rgba(42,31,24,.86); font-weight:1100;">
+              Nadam se da ti se svidelo.<br>
+              Želim ti sve najbolje.<br>
+              Srećan rođendan.<br>
+              <span style="color:rgba(42,31,24,.92)">Tvoj Aleksa ❤️</span>
+            </p>
+            <div class="sp12"></div>
+            <div class="row">
+              <button class="btn primary" id="btnKraj">Kraj</button>
+              <button class="btn ghost" id="btnAgain">Ponovo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countdown -->
+      <div class="countdown" id="countdown">
+        <div class="countNum" id="countNum">3</div>
+      </div>
+
+      <!-- Kiss -->
+      <div class="kiss" id="kiss">
+        <div class="kissCenter">💋</div>
+        <div class="kissHearts" id="kissHearts"></div>
+        <div class="kissFade"></div>
+      </div>
+    </div>
+
+    <script>
+      // ========= utilities =========
+      const dprCap = 2;
+      const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+      const rand = (a,b)=>Math.random()*(b-a)+a;
+      const now = ()=>performance.now();
+      function vibrate(ms=15){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+      function fitCanvas(c){
+        const dpr = Math.min(dprCap, window.devicePixelRatio || 1);
+        c.width = Math.floor(window.innerWidth * dpr);
+        c.height = Math.floor(window.innerHeight * dpr);
+        return dpr;
+      }
+
+      // ========= background balloons (MORE + faster + stronger opacity) =========
+      const balloonsEl = document.getElementById("balloons");
+      function buildBalloons(){
+        balloonsEl.innerHTML = "";
+        const colors = [
+          "rgba(255,90,165,.46)",
+          "rgba(214,162,58,.40)",
+          "rgba(255,170,115,.38)",
+          "rgba(255,120,150,.40)",
+          "rgba(255,220,120,.34)",
+        ];
+        const count = Math.max(30, Math.floor((window.innerWidth * window.innerHeight) / 32000));
+        for(let i=0;i<count;i++){
+          const b = document.createElement("div");
+          b.className = "balloon";
+          b.style.left = rand(-10, 110) + "vw";
+          b.style.setProperty("--sz", rand(56, 130) + "px");
+          b.style.setProperty("--op", rand(0.18, 0.34));
+          b.style.setProperty("--dur", rand(10, 18) + "s");
+          b.style.setProperty("--dur2", rand(3.8, 7.0) + "s");
+          b.style.setProperty("--col", colors[Math.floor(rand(0, colors.length))]);
+          b.style.animationDelay = (-rand(0, 18)) + "s";
+          balloonsEl.appendChild(b);
+        }
+      }
+      buildBalloons();
+
+      // ========= UI refs =========
+      const g1 = document.getElementById("g1");
+      const g2 = document.getElementById("g2");
+      const ctx1 = g1.getContext("2d");
+      const ctx2 = g2.getContext("2d");
+
+      const hud = document.getElementById("hud");
+      const hudLeft = document.getElementById("hudLeft");
+      const hudRight = document.getElementById("hudRight");
+
+      const ovInstr = document.getElementById("ovInstr");
+      const instrTitle = document.getElementById("instrTitle");
+      const instrText = document.getElementById("instrText");
+      const instrTapHint = document.getElementById("instrTapHint");
+
+      const countdownEl = document.getElementById("countdown");
+      const countNum = document.getElementById("countNum");
+
+      const ovResult = document.getElementById("ovResult");
+      const resTitle = document.getElementById("resTitle");
+      const resBig = document.getElementById("resBig");
+      const resSmall = document.getElementById("resSmall");
+      const btnReplay = document.getElementById("btnReplay");
+      const btnNext = document.getElementById("btnNext");
+
+      const ovGift = document.getElementById("ovGift");
+      const giftBox = document.getElementById("giftBox");
+      const giftTapNote = document.getElementById("giftTapNote");
+
+      const ovFinal = document.getElementById("ovFinal");
+      const btnKraj = document.getElementById("btnKraj");
+      const btnAgain = document.getElementById("btnAgain");
+
+      const kiss = document.getElementById("kiss");
+      const kissHearts = document.getElementById("kissHearts");
+
+      // ========= screen control =========
+      let activeGame = 0;
+      function setCanvasActive(n){
+        [g1,g2].forEach((c,i)=>c.classList.toggle("active", i===n-1));
+        activeGame = n;
+      }
+      function showOverlay(el, yes){ el.classList.toggle("active", !!yes); }
+      function setHUD(yes){ hud.classList.toggle("active", !!yes); }
+
+      // ========= instruction controller (tap anywhere after 1.5s) =========
+      const FLOW = { allowTap:false, startFn:null };
+
+      function showInstruction(title, text, onStart){
+        instrTitle.textContent = title;
+        instrText.textContent = text;
+        FLOW.allowTap = false;
+        FLOW.startFn = onStart;
+
+        instrTapHint.classList.remove("show");
+        showOverlay(ovInstr, true);
+        showOverlay(ovResult, false);
+        showOverlay(ovGift, false);
+        showOverlay(ovFinal, false);
+        setHUD(false);
+        setCanvasActive(0);
+
+        setTimeout(() => {
+          FLOW.allowTap = true;
+          instrTapHint.classList.add("show");
+        }, 1500);
+      }
+
+      function startCountdownThen(fn){
+        showOverlay(ovInstr, false);
+        countdownEl.classList.add("show");
+        let n = 3;
+        countNum.textContent = String(n);
+
+        const tick = () => {
+          if(n<=1){
+            setTimeout(() => {
+              countdownEl.classList.remove("show");
+              fn();
+            }, 240);
+            return;
+          }
+          n -= 1;
+          setTimeout(() => {
+            countNum.textContent = String(n);
+            countNum.style.animation = "none";
+            void countNum.offsetHeight;
+            countNum.style.animation = "";
+            tick();
+          }, 650);
+        };
+        setTimeout(tick, 650);
+      }
+
+      ovInstr.addEventListener("pointerdown", () => {
+        if(!FLOW.allowTap || !FLOW.startFn) return;
+        vibrate(12);
+        startCountdownThen(FLOW.startFn);
+      });
+
+      // ========= result overlay =========
+      let lastResult = { replay:null, next:null };
+      function showResult({title, big, small, onReplay, onNext}){
+        lastResult = { replay:onReplay, next:onNext };
+        resTitle.textContent = title;
+        resBig.textContent = big;
+        resSmall.textContent = small || " ";
+        showOverlay(ovResult, true);
+        setHUD(false);
+      }
+      btnReplay.addEventListener("click", () => {
+        vibrate(12);
+        showOverlay(ovResult, false);
+        if(lastResult.replay) startCountdownThen(lastResult.replay);
+      });
+      btnNext.addEventListener("click", () => {
+        vibrate(12);
+        showOverlay(ovResult, false);
+        if(lastResult.next) lastResult.next();
+      });
+
+      // ========= helpers =========
+      function canvasPoint(canvas, e){
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(dprCap, window.devicePixelRatio || 1);
+        const cx = (e.clientX ?? (e.touches && e.touches[0].clientX)) || 0;
+        const cy = (e.clientY ?? (e.touches && e.touches[0].clientY)) || 0;
+        return { x:(cx-rect.left)*dpr, y:(cy-rect.top)*dpr };
+      }
+
+      // ========= GAME 1: Catch the Heart (target 10) =========
+      const game1 = {
+        running:false, lastT:0, score:0,
+        best: Number(localStorage.getItem("g1Best")||"0"),
+        target:10,
+        heart:{x:0,y:0,r:28,vx:0,vy:0,dashT:0},
+
+        fit(){ fitCanvas(g1); this.heart.r = Math.max(22, Math.min(g1.width, g1.height)*0.035); },
+        reset(){
+          this.score=0;
+          const h=this.heart;
+          h.x=g1.width*0.5; h.y=g1.height*0.52;
+          h.vx=rand(-120,120); h.vy=rand(-90,90);
+          h.dashT=0;
+          this.lastT=0;
+          hudLeft.innerHTML = `❤️ <small>Uhvaćeno</small> <strong>${this.score}</strong>/${this.target}`;
+          hudRight.innerHTML = `🏅 <small>Najbolje</small> <strong>${this.best}</strong>`;
+        },
+        start(){
+          this.fit(); this.reset();
+          this.running=true;
+          setCanvasActive(1);
+          setHUD(true);
+          this.loop(now());
+        },
+        stop(){ this.running=false; },
+        update(dt){
+          const h=this.heart, w=g1.width, H=g1.height;
+          const base=170, maxV=base + this.score*22;
+
+          h.dashT -= dt;
+          if(h.dashT <= 0){
+            if(Math.random() < 0.08 + this.score*0.008){
+              const ang = rand(0, Math.PI*2);
+              h.vx += Math.cos(ang) * (120 + this.score*8);
+              h.vy += Math.sin(ang) * (90 + this.score*6);
+            }
+            h.dashT = rand(0.35, 0.95);
+          }
+
+          h.vx += rand(-1,1) * (120 + this.score*10) * dt;
+          h.vy += rand(-1,1) * (90  + this.score*8)  * dt;
+
+          const v=Math.hypot(h.vx,h.vy) || 1;
+          if(v>maxV){ h.vx=h.vx/v*maxV; h.vy=h.vy/v*maxV; }
+
+          h.x += h.vx*dt; h.y += h.vy*dt;
+
+          if(h.x < h.r){ h.x=h.r; h.vx*=-0.9; }
+          if(h.x > w-h.r){ h.x=w-h.r; h.vx*=-0.9; }
+          if(h.y < h.r){ h.y=h.r; h.vy*=-0.9; }
+          if(h.y > H-h.r){ h.y=H-h.r; h.vy*=-0.9; }
+        },
+        draw(){
+          const w=g1.width, H=g1.height;
+          ctx1.clearRect(0,0,w,H);
+
+          ctx1.globalAlpha=0.08;
+          ctx1.fillStyle="rgba(255,90,165,1)";
+          for(let i=0;i<12;i++) ctx1.fillRect((i/12)*w, 0, 1, H);
+          ctx1.globalAlpha=1;
+
+          const {x,y,r}=this.heart;
+          ctx1.save();
+          ctx1.shadowColor="rgba(255,90,165,.35)";
+          ctx1.shadowBlur=r*1.1;
+          ctx1.font=`${Math.floor(r*2.15)}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
+          ctx1.textAlign="center"; ctx1.textBaseline="middle";
+          ctx1.fillText("💗", x, y);
+          ctx1.restore();
+
+          ctx1.globalAlpha=0.78;
+          ctx1.fillStyle="rgba(42,31,24,.62)";
+          ctx1.font=`${Math.floor(Math.max(14, w*0.018))}px system-ui`;
+          ctx1.textAlign="center";
+          ctx1.fillText("Dodirni 💗 (uhvati 10)", w/2, H - Math.max(26, H*0.06));
+          ctx1.globalAlpha=1;
+        },
+        loop(t){
+          if(!this.running) return;
+          if(!this.lastT) this.lastT=t;
+          const dt=Math.min(0.033,(t-this.lastT)/1000);
+          this.lastT=t;
+          this.update(dt);
+          this.draw();
+          requestAnimationFrame(ts=>this.loop(ts));
+        },
+        hit(px,py){
+          if(!this.running) return;
+          const h=this.heart;
+          const hitRadius = h.r*(1.18 - this.score*0.01);
+          if(Math.hypot(px-h.x, py-h.y) <= hitRadius){
+            vibrate(16);
+            this.score++;
+            hudLeft.innerHTML = `❤️ <small>Uhvaćeno</small> <strong>${this.score}</strong>/${this.target}`;
+
+            h.x = rand(h.r, g1.width - h.r);
+            h.y = rand(h.r, g1.height - h.r);
+            h.vx = rand(-160,160);
+            h.vy = rand(-120,120);
+
+            if(this.score >= this.target){
+              this.stop();
+              this.best = Math.max(this.best, this.score);
+              localStorage.setItem("g1Best", String(this.best));
+              hudRight.innerHTML = `🏅 <small>Najbolje</small> <strong>${this.best}</strong>`;
+
+              showResult({
+                title:"Igra 1 završena",
+                big:`${this.score}`,
+                small:"Uhvaćeno 💗",
+                onReplay: ()=>this.start(),
+                onNext: ()=>startPreGame2()
+              });
+            }
+          }
+        }
+      };
+
+      g1.addEventListener("pointerdown", (e)=>{
+        const p=canvasPoint(g1,e);
+        game1.hit(p.x,p.y);
+      }, {passive:true});
+
+      // ========= GAME 2: Free movement (follow finger), +1 animation, no overlap =========
+      const game2 = {
+        running:false, lastT:0,
+        score:0,
+        best: Number(localStorage.getItem("g2Best")||"0"),
+        strikes:0,
+        spawnT:0,
+        items:[],
+        pops:[],
+        player:{x:0,y:0,r:28, targetX:0, targetY:0},
+        pointerDown:false,
+
+        fit(){
+          fitCanvas(g2);
+          const w=g2.width, h=g2.height;
+          this.player.r = Math.max(22, Math.min(w,h)*0.03);
+        },
+        reset(){
+          this.score=0;
+          this.strikes=0;
+          this.spawnT=0;
+          this.items=[];
+          this.pops=[];
+          const w=g2.width, h=g2.height;
+          this.player.x = w*0.5;
+          this.player.y = h*0.80;
+          this.player.targetX = this.player.x;
+          this.player.targetY = this.player.y;
+          this.pointerDown=false;
+          this.lastT=0;
+
+          hudLeft.innerHTML = `🎁 <small>Score</small> <strong>${this.score}</strong>`;
+          hudRight.innerHTML = `🖤 <small>Greške</small> <strong>${this.strikes}</strong>/2`;
+        },
+        start(){
+          this.fit();
+          this.reset();
+          this.running=true;
+          setCanvasActive(2);
+          setHUD(true);
+          this.loop(now());
+        },
+        stop(){ this.running=false; },
+
+        trySpawn(){
+          const w=g2.width;
+          const r = Math.max(18, w*0.022);
+          const baseSpeed = 270 + this.score*3.8;
+          const vy = baseSpeed + rand(-30, 50);
+
+          const goodChance = Math.max(0.42, 0.80 - this.score*0.010);
+          const good = Math.random() < goodChance;
+
+          const minDist = r*2.6;
+          let x=rand(r, w-r);
+          let ok=false;
+          for(let tries=0; tries<22; tries++){
+            x = rand(r, w-r);
+            ok = true;
+            for(const it of this.items){
+              if(it.y < r*7){
+                if(Math.abs(it.x - x) < minDist) { ok=false; break; }
+              }
+            }
+            if(ok) break;
+          }
+          const y = -r*2 - (ok ? 0 : rand(0, r*4));
+          this.items.push({x, y, vy, r, good});
+        },
+
+        update(dt){
+          const w=g2.width, h=g2.height;
+
+          this.spawnT += dt;
+          const spawnEvery = Math.max(0.26, 0.68 - this.score*0.007);
+          if(this.spawnT >= spawnEvery){
+            this.spawnT = 0;
+            this.trySpawn();
+            if(this.score > 12 && Math.random() < 0.26) this.trySpawn();
+          }
+
+          const p=this.player;
+          const follow = 15.5;
+          p.x += (p.targetX - p.x) * (1 - Math.exp(-follow*dt));
+          p.y += (p.targetY - p.y) * (1 - Math.exp(-follow*dt));
+          p.x = clamp(p.x, p.r, w - p.r);
+          p.y = clamp(p.y, p.r, h - p.r);
+
+          for(const it of this.items) it.y += it.vy*dt;
+          this.items = this.items.filter(it => it.y < h + it.r*3);
+
+          for(const pop of this.pops){
+            pop.y += pop.vy*dt;
+            pop.alpha -= dt*1.25;
+          }
+          this.pops = this.pops.filter(p=>p.alpha>0);
+
+          for(let i=this.items.length-1;i>=0;i--){
+            const it=this.items[i];
+            const d = Math.hypot(it.x - p.x, it.y - p.y);
+            if(d <= (it.r + p.r)*0.92){
+              this.items.splice(i,1);
+              if(it.good){
+                this.score += 1;
+                vibrate(14);
+                hudLeft.innerHTML = `🎁 <small>Score</small> <strong>${this.score}</strong>`;
+                this.pops.push({ x:p.x, y:p.y - p.r*0.6, vy:-220, alpha:1, text:"+1" });
+              }else{
+                this.strikes += 1;
+                vibrate(24);
+                hudRight.innerHTML = `🖤 <small>Greške</small> <strong>${this.strikes}</strong>/2`;
+                if(this.strikes >= 2){
+                  this.stop();
+                  this.best = Math.max(this.best, this.score);
+                  localStorage.setItem("g2Best", String(this.best));
+                  showResult({
+                    title:"Igra 2 završena",
+                    big:`${this.score}`,
+                    small:`Najbolje: ${this.best}`,
+                    onReplay: ()=>this.start(),
+                    onNext: ()=>{
+                      resetGift();
+                      showOverlay(ovGift, true);
+                      setCanvasActive(0);
+                      setHUD(false);
+                    }
+                  });
+                  return;
+                }
+              }
+            }
+          }
+        },
+
+        draw(){
+          const w=g2.width, h=g2.height;
+          ctx2.clearRect(0,0,w,h);
+
+          for(const it of this.items){
+            ctx2.save();
+            ctx2.shadowColor = it.good ? "rgba(255,90,165,.30)" : "rgba(42,31,24,.18)";
+            ctx2.shadowBlur = 18;
+            const emoji = it.good ? "💗" : "🖤";
+            const size = Math.floor(Math.max(30, w*0.045));
+            ctx2.font = `${size}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
+            ctx2.textAlign="center";
+            ctx2.textBaseline="middle";
+            ctx2.fillText(emoji, it.x, it.y);
+            ctx2.restore();
+          }
+
+          const p=this.player;
+          ctx2.save();
+          ctx2.shadowColor="rgba(214,162,58,.24)";
+          ctx2.shadowBlur=22;
+          const pSize = Math.floor(Math.max(34, w*0.055));
+          ctx2.font = `${pSize}px system-ui, Apple Color Emoji, Segoe UI Emoji`;
+          ctx2.textAlign="center";
+          ctx2.textBaseline="middle";
+          ctx2.fillText("🎁", p.x, p.y);
+          ctx2.restore();
+
+          for(const pop of this.pops){
+            ctx2.save();
+            ctx2.globalAlpha = Math.max(0, pop.alpha);
+            ctx2.fillStyle = "rgba(255,90,165,.98)";
+            ctx2.font = `${Math.floor(Math.max(18, w*0.028))}px system-ui`;
+            ctx2.textAlign="center";
+            ctx2.textBaseline="middle";
+            ctx2.shadowColor="rgba(255,90,165,.24)";
+            ctx2.shadowBlur=18;
+            ctx2.fillText(pop.text, pop.x, pop.y);
+            ctx2.restore();
+          }
+
+          ctx2.globalAlpha=0.78;
+          ctx2.fillStyle="rgba(42,31,24,.62)";
+          ctx2.font=`${Math.floor(Math.max(14, w*0.018))}px system-ui`;
+          ctx2.textAlign="center";
+          ctx2.fillText("Pomeri 🎁 prstom. 💗 +1 | 🖤 greška (2 = kraj)", w/2, h - Math.max(26, h*0.06));
+          ctx2.globalAlpha=1;
+        },
+
+        loop(t){
+          if(!this.running) return;
+          if(!this.lastT) this.lastT=t;
+          const dt=Math.min(0.033,(t-this.lastT)/1000);
+          this.lastT=t;
+          this.update(dt);
+          this.draw();
+          requestAnimationFrame(ts=>this.loop(ts));
+        },
+
+        setTargetFromClient(clientX, clientY){
+          const dpr = Math.min(dprCap, window.devicePixelRatio || 1);
+          this.player.targetX = clientX * dpr;
+          this.player.targetY = clientY * dpr;
+        }
+      };
+
+      g2.addEventListener("pointerdown", (e)=>{
+        if(!game2.running) return;
+        game2.pointerDown = true;
+        game2.setTargetFromClient(e.clientX, e.clientY);
+      });
+      g2.addEventListener("pointermove", (e)=>{
+        if(!game2.running) return;
+        if(e.pointerType==="mouse" && !game2.pointerDown) return;
+        game2.setTargetFromClient(e.clientX, e.clientY);
+      });
+      g2.addEventListener("pointerup", ()=>{ game2.pointerDown=false; });
+      g2.addEventListener("pointercancel", ()=>{ game2.pointerDown=false; });
+
+      g2.addEventListener("touchstart", (e)=>{
+        if(!game2.running) return;
+        game2.pointerDown=true;
+        game2.setTargetFromClient(e.touches[0].clientX, e.touches[0].clientY);
+      }, {passive:true});
+      g2.addEventListener("touchmove", (e)=>{
+        if(!game2.running) return;
+        game2.setTargetFromClient(e.touches[0].clientX, e.touches[0].clientY);
+      }, {passive:true});
+      g2.addEventListener("touchend", ()=>{ game2.pointerDown=false; }, {passive:true});
+
+      // ========= Gift -> Final -> Kiss =========
+      let giftOpened=false;
+      function resetGift(){
+        giftOpened=false;
+        giftBox.classList.remove("open");
+        giftTapNote.textContent = "Tapni 🎁";
+      }
+
+      giftBox.addEventListener("click", ()=>{
+        if(giftOpened) return;
+        vibrate(18);
+        giftBox.classList.add("shake");
+        setTimeout(()=>giftBox.classList.remove("shake"), 380);
+
+        setTimeout(()=>{
+          giftOpened=true;
+          giftBox.classList.add("open");
+          giftTapNote.textContent = "Otvoreno ✨";
+          setTimeout(()=>{
+            showOverlay(ovGift, false);
+            showOverlay(ovFinal, true);
+          }, 650);
+        }, 180);
+      });
+
+      function spawnKissHearts(){
+        kissHearts.innerHTML="";
+        const count=30;
+        for(let i=0;i<count;i++){
+          const el=document.createElement("div");
+          el.className="kH";
+          el.textContent = Math.random()<0.7 ? "💗" : "❤️";
+          el.style.left = rand(10,90) + "vw";
+          el.style.top  = rand(35,70) + "vh";
+          el.style.setProperty("--dx", rand(-180,180) + "px");
+          el.style.setProperty("--dy", rand(-280,-90) + "px");
+          el.style.animationDuration = (900 + rand(0,700)) + "ms";
+          kissHearts.appendChild(el);
+        }
+      }
+
+      btnKraj.addEventListener("click", ()=>{
+        vibrate(22);
+        showOverlay(ovFinal, false);
+        kiss.classList.add("show");
+        spawnKissHearts();
+        setTimeout(()=>{
+          kiss.classList.remove("show");
+          startIntro();
+        }, 1400);
+      });
+
+      btnAgain.addEventListener("click", ()=>{
+        vibrate(12);
+        restartAll();
+        startPreGame1();
+      });
+
+      // ========= flow screens =========
+      function startIntro(){
+        setCanvasActive(0);
+        setHUD(false);
+        showOverlay(ovResult,false);
+        showOverlay(ovGift,false);
+        showOverlay(ovFinal,false);
+        showInstruction(
+          "Rođendanski poklon 🎂",
+          "Dva mala izazova.\nNa kraju te čeka iznenađenje.",
+          ()=>startPreGame1(true)
+        );
+      }
+
+      function startPreGame1(fromIntro=false){
+        showInstruction(
+          "Igra 1: Catch the Heart 💗",
+          "Dodirni 💗 kad se pojavi.\nCilj: uhvati 10.",
+          ()=>game1.start()
+        );
+      }
+
+      function startPreGame2(){
+        showInstruction(
+          "Igra 2: Poklon 🎁",
+          "Pomeri 🎁 prstom.\nSkupljaj 💗 za poene.\nIzbegavaj 🖤.\nPosle 2 greške — kraj.",
+          ()=>game2.start()
+        );
+      }
+
+      function restartAll(){
+        game1.stop(); game2.stop();
+        resetGift();
+        showOverlay(ovResult,false);
+        showOverlay(ovGift,false);
+        showOverlay(ovFinal,false);
+        setCanvasActive(0);
+        setHUD(false);
+      }
+
+      // ========= resize =========
+      window.addEventListener("resize", ()=>{
+        buildBalloons();
+        if(activeGame===1) game1.fit();
+        if(activeGame===2) game2.fit();
+      });
+
+      // prevent iOS scroll
+      [g1,g2].forEach(c=>{
+        c.addEventListener("touchmove", (e)=>e.preventDefault(), {passive:false});
+      });
+
+      // Start at intro
+      startIntro();
+    </script>
+  </body>
+</html>
